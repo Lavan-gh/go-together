@@ -1,7 +1,36 @@
 import 'package:flutter/material.dart';
 
-class RideBookingPage extends StatelessWidget {
+class RideBookingPage extends StatefulWidget {
   const RideBookingPage({super.key});
+
+  @override
+  State<RideBookingPage> createState() => _RideBookingPageState();
+}
+
+class _RideBookingPageState extends State<RideBookingPage> {
+  final TextEditingController _pickupController = TextEditingController();
+  final TextEditingController _dropoffController = TextEditingController();
+
+  @override
+  void dispose() {
+    _pickupController.dispose();
+    _dropoffController.dispose();
+    super.dispose();
+  }
+
+  void _bookRide() {
+    if (_pickupController.text.isEmpty || _dropoffController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter both pickup and drop-off locations.')),
+      );
+      return;
+    }
+
+    // Add functionality to book a ride
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ride booked from ${_pickupController.text} to ${_dropoffController.text}!')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -9,19 +38,29 @@ class RideBookingPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Book a Ride'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Enter your pickup and drop-off locations.',
-              style: TextStyle(fontSize: 18),
+            TextField(
+              controller: _pickupController,
+              decoration: const InputDecoration(
+                labelText: 'Pickup Location',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _dropoffController,
+              decoration: const InputDecoration(
+                labelText: 'Drop-off Location',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Add functionality to book a ride
-              },
+              onPressed: _bookRide,
               child: const Text('Book Now'),
             ),
           ],

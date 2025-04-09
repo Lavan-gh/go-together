@@ -1,5 +1,5 @@
-name: app_1
-description: A new Flutter project for Firebase Auth login/register
+name: go_together
+description: A carpool app with Firebase Auth, ride booking, and SOS features.
 publish_to: 'none' # Remove this line if you plan to publish
 
 version: 1.0.0+1
@@ -14,6 +14,13 @@ dependencies:
   # Firebase Core and Auth
   firebase_core: ^2.30.0
   firebase_auth: ^4.17.4
+
+  # Google Maps and Geolocator
+  google_maps_flutter: ^2.2.0
+  geolocator: ^9.0.2
+
+  # Lottie for animations (optional, for motion graphics)
+  lottie: ^2.2.0
 
   # Other common dependencies
   cupertino_icons: ^1.0.6
@@ -31,3 +38,4 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/background.jpg
+    - assets/animations/register_animation.json

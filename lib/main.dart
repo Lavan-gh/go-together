@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart'; // Ensure this file is correctly configured
+import 'services/auth_service.dart';
 import 'login.dart';
 import 'register.dart';
 import 'home.dart';
-import 'sos.dart';
-import 'booking.dart';
-import 'ride_match.dart';
 import 'profile.dart';
+import 'edit_profile.dart';
+import 'sos.dart';
+import 'give_ride.dart';
+import 'book_ride.dart';
+import 'co2_tracker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
   runApp(const MyApp());
 }
 
@@ -24,19 +32,21 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Carpool App',
+      title: 'GoTogether App',
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
-      initialRoute: '/login',
+      initialRoute: FirebaseAuth.instance.currentUser == null ? '/login' : '/home',
       routes: {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
-        '/sos': (context) => const SOSPage(),
-        '/ride_booking': (context) => const RideBookingPage(),
-        '/ride_match': (context) => const RideMatchPage(),
         '/profile': (context) => const ProfilePage(),
+        '/edit_profile': (context) => const EditProfilePage(),
+        '/sos': (context) => const SOSPage(),
+        '/give_ride': (context) => const GiveRidePage(),
+        '/book_ride': (context) => const BookRidePage(),
+        '/co2_tracker': (context) => const CO2TrackerPage(),
       },
     );
   }
