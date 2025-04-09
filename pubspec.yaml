@@ -25,8 +25,9 @@ dev_dependencies:
   flutter_lints: ^3.0.1
 
 flutter:
-
   uses-material-design: true
 
+  # Assets
   assets:
-    - assets/images/  # Only if you have images here (optional)
+    - assets/images/logo.png
+    - assets/images/background.jpg
