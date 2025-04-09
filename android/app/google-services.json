@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "155146379666",
+    "project_id": "go-together-780d2",
+    "storage_bucket": "go-together-780d2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155146379666:android:30f1e46eb3a3b17c44614b",
+        "android_client_info": {
+          "package_name": "com.example.app_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7lU0-1XIfKFPW2RsIpqxglDnrjU0XnuU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155146379666:android:c5f1fe721e6ca9b244614b",
+        "android_client_info": {
+          "package_name": "com.example.gotogether"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7lU0-1XIfKFPW2RsIpqxglDnrjU0XnuU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
