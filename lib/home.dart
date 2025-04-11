@@ -1,108 +1,257 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'services/auth_service.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // Properties
+  CameraPosition _currentCameraPosition = const CameraPosition(
+    target: LatLng(16.329363002332755, 79.71954055875539),
+    zoom: 15,
+  );
+  final TextEditingController _sourceController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
+  DateTime _selectedDateTime = DateTime.now();
+  int _selectedSeats = 1;
+  final DateFormat _dateFormat = DateFormat('MMM dd, yyyy HH:mm');
+
+  // Initialize state
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  // Dispose controllers
+  @override
+  void dispose() {
+    _sourceController.dispose();
+    _destinationController.dispose();
+    super.dispose();
+  }
+
+  // Get current location
+  Future<void> _getCurrentLocation() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    Position currentPosition = await Geolocator.getCurrentPosition();
+    if (mounted) {
+      setState(() {
+        _currentCameraPosition = CameraPosition(
+          target: LatLng(currentPosition.latitude, currentPosition.longitude),
+          zoom: 15,
+        );
+      });
+    }
+  }
+
+  // Select date and time
+  Future<void> _selectDateAndTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null && mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+      );
+      if (pickedTime != null && mounted) {
+        setState(() {
+          _selectedDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
+  }
+
+  // Increment seats
+  void _incrementSeats() {
+    setState(() {
+      _selectedSeats++;
+    });
+  }
+
+  // Decrement seats
+  void _decrementSeats() {
+    setState(() {
+      if (_selectedSeats > 1) {
+        _selectedSeats--;
+      }
+    });
+  }
+
+  // Swap source and destination
+  void _swapSourceDestination() {
+    final temp = _sourceController.text;
+    _sourceController.text = _destinationController.text;
+    _destinationController.text = temp;
+  }
+
+  // Request ride
+  void _requestRide() {
+    if (mounted) {
+      final String sourceAddress = _sourceController.text;
+      final String destinationAddress = _destinationController.text;
+
+      if (sourceAddress.isEmpty || destinationAddress.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Please enter both source and destination addresses.')),
+        );
+        return;
+      }
+
+      print('Source Address: $sourceAddress');
+      print('Destination Address: $destinationAddress');
+      print('Selected Date and Time: $_selectedDateTime');
+      print('Number of Seats: $_selectedSeats');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ride requested')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              try {
-                await AuthService().signOut();
-                Navigator.pushReplacementNamed(context, '/login');
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Logout failed: $e')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Colors.teal,
-              ),
-              child: const Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.sos),
-              title: const Text('SOS'),
-              onTap: () {
-                Navigator.pushNamed(context, '/sos');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Profile'),
-              onTap: () {
-                Navigator.pushNamed(context, '/profile');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.eco),
-              title: const Text('CO2 Tracker'),
-              onTap: () {
-                Navigator.pushNamed(context, '/co2_tracker');
-              },
-            ),
-          ],
-        ),
+        title: const Text('Home Page'), // App bar title
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/give_ride');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            // Google Map
+            Expanded(
+              child: GoogleMap(
+                initialCameraPosition: _currentCameraPosition,
+                myLocationEnabled: true,
               ),
-              child: const Text(
-                'Give Ride',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
+            // Source and Destination Row
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _sourceController,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter source address',
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: _swapSourceDestination,
+                  icon: const Icon(Icons.swap_horiz),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _destinationController,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter destination address',
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Car, Bike, Rider Row
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (user?.emailVerified == true)
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text('Car'),
+                    ),
+                  if (user?.emailVerified == true)
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text('Bike'),
+                    ),
+                  const TextButton(
+                    onPressed: null,
+                    child: Text('Rider'),
+                  ),
+                ],
+              ),
+            ),
+            // Date and Time Row
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Date/Time:'),
+                  TextButton(
+                    onPressed: () => _selectDateAndTime(context),
+                    child: Text(
+                      _dateFormat.format(_selectedDateTime),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Seats Row
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Seats:'),
+                  IconButton(
+                    icon: const Icon(Icons.remove),
+                    onPressed: _decrementSeats,
+                  ),
+                  Text('$_selectedSeats'),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: _incrementSeats,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
+            // Request Ride Button
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/book_ride');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Book Ride',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
+              onPressed: _requestRide,
+              child: const Text('Request Ride'),
             ),
           ],
         ),

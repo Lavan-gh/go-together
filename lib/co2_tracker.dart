@@ -14,21 +14,24 @@ class CO2TrackerPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Title text
             const Text(
               'Track your CO2 emissions and savings here!',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
+            // Description text
             const Text(
               'This feature will allow you to monitor your environmental impact by tracking the CO2 emissions saved through carpooling.',
               style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
+            // Button to trigger CO2 tracking functionality
             ElevatedButton(
               onPressed: () {
-                // Add functionality to calculate or display CO2 savings
+                // Show a SnackBar when the button is pressed
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('CO2 Tracker functionality coming soon!'),

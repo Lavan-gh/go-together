@@ -10,56 +10,66 @@ class BookRidePage extends StatefulWidget {
 }
 
 class _BookRidePageState extends State<BookRidePage> {
-  late GoogleMapController _mapController;
+  late GoogleMapController _mapController; // Controller for the Google Map
   LatLng _currentLocation = const LatLng(37.7749, -122.4194); // Default to San Francisco
-  LatLng? _destination;
-  bool _isLoading = true;
+  LatLng? _destination; // Selected destination on the map
+  bool _isLoading = true; // Indicates if the current location is being loaded
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _getCurrentLocation(); // Get the user's current location when the page is initialized
   }
 
+  // Method to get the user's current location
   Future<void> _getCurrentLocation() async {
     try {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      setState(() {
-        _currentLocation = LatLng(position.latitude, position.longitude);
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _currentLocation = LatLng(position.latitude, position.longitude);
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to fetch current location.')),
-      );
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to fetch current location.')),
+        );
+      }
     }
   }
 
+  // Method called when the map is tapped
   void _onMapTapped(LatLng position) {
-    setState(() {
-      _destination = position;
-    });
+    if (mounted) {
+      setState(() {
+        _destination = position;
+      });
+    }
   }
 
+  // Method to confirm the ride
   void _confirmRide() {
-    if (_destination != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Ride confirmed to ${_destination!.latitude}, ${_destination!.longitude}!',
+    if (mounted) {
+      if (_destination != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Ride confirmed to ${_destination!.latitude}, ${_destination!.longitude}!',
+            ),
           ),
-        ),
-      );
-      // Add ride booking logic here
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a destination.')),
-      );
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a destination.')),
+        );
+      }
     }
   }
 

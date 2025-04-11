@@ -18,6 +18,7 @@ dependencies:
   # Google Maps and Geolocator
   google_maps_flutter: ^2.2.0
   geolocator: ^9.0.2
+  intl: ^0.19.0
 
   # Lottie for animations (optional, for motion graphics)
   lottie: ^2.2.0

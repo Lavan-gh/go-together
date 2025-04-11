@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart'; // Ensure this file is correctly configured
-import 'services/auth_service.dart';
+
 import 'login.dart';
 import 'register.dart';
 import 'home.dart';

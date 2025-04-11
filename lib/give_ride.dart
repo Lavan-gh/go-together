@@ -7,38 +7,42 @@ class GiveRidePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Give a Ride'),
+        title: const Text('Give a Ride'), // App bar title
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              decoration: const InputDecoration(
+            // TextField for Pickup Location
+            const TextField(
+              decoration: InputDecoration(
                 labelText: 'Pickup Location',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
-            TextField(
-              decoration: const InputDecoration(
+            // TextField for Drop-off Location
+            const TextField(
+              decoration: InputDecoration(
                 labelText: 'Drop-off Location',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
-            TextField(
+            // TextField for Number of Seats Available
+            const TextField(
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Number of Seats Available',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
+            // Button to submit ride details
             ElevatedButton(
               onPressed: () {
-                // Add functionality to submit ride details
+                // Show a SnackBar when the button is pressed
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Ride details submitted!')),
                 );
