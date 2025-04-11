@@ -8,32 +8,33 @@ environment:
   sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
+  http: ^1.2.1
+  # Firebase Core and Auth
+  firebase_auth: ^5.5.2
   flutter:
     sdk: flutter
-
-  # Firebase Core and Auth
-  firebase_core: ^2.30.0
-  firebase_auth: ^4.17.4
-
   # Google Maps and Geolocator
-  google_maps_flutter: ^2.2.0
-  geolocator: ^9.0.2
-  intl: ^0.19.0
-
+  google_maps_flutter: ^2.5.0
+  geolocator: ^13.0.4
+  intl: ^0.20.2
   # Lottie for animations (optional, for motion graphics)
-  lottie: ^2.2.0
-
+  lottie: ^3.3.1
+  firebase_core: ^3.13.0
+  # Other common dependencies
   # Other common dependencies
   cupertino_icons: ^1.0.6
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.1
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
+  generate: true
 
   # Assets
   assets:

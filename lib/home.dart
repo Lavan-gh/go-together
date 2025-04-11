@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -40,31 +40,44 @@ class _HomePageState extends State<HomePage> {
 
   // Get current location
   Future<void> _getCurrentLocation() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied')),
+          );
+          return;
+        }
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
+      if (permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are permanently denied')),
+        );
+        return;
+      }
 
-    Position currentPosition = await Geolocator.getCurrentPosition();
-    if (mounted) {
+      final Position currentPosition = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
       setState(() {
         _currentCameraPosition = CameraPosition(
           target: LatLng(currentPosition.latitude, currentPosition.longitude),
           zoom: 15,
         );
       });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to get location')),
+      );
     }
   }
 
-  // Select date and time
+    // Select date and time
   Future<void> _selectDateAndTime(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -151,11 +164,17 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // Google Map
-            Expanded(
+            SizedBox(
+              height: 200, // Adjust the height as needed
               child: GoogleMap(
                 initialCameraPosition: _currentCameraPosition,
-                myLocationEnabled: true,
+                zoomControlsEnabled: false,
+                myLocationButtonEnabled: false,
+                onMapCreated: (GoogleMapController controller) {
+                  // You can use the controller to manipulate the map
+                  // For example, to move the camera:
+                  // controller.animateCamera(CameraUpdate.newLatLng(_currentCameraPosition.target));
+                },
               ),
             ),
             // Source and Destination Row

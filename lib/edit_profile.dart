@@ -1,3 +1,4 @@
+// @dart=2.19
 import 'package:flutter/material.dart';
 
 class EditProfilePage extends StatelessWidget {
