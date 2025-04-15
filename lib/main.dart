@@ -1,52 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_options.dart'; // Ensure this file is correctly configured
-import 'services/auth_service.dart';
-import 'login.dart';
-import 'register.dart';
-import 'home.dart';
-import 'profile.dart';
-import 'edit_profile.dart';
-import 'sos.dart';
-import 'give_ride.dart';
-import 'book_ride.dart';
-import 'co2_tracker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/sos_screen.dart';
+import 'screens/co2_tracker_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/book_ride_screen.dart';
+import 'screens/request_ride_screen.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    debugPrint('Firebase initialization error: $e');
-  }
-  runApp(const MyApp());
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'GoTogether App',
+      title: 'Go Together',
       theme: ThemeData(
-        primarySwatch: Colors.teal,
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        fontFamily: GoogleFonts.poppins().fontFamily,
       ),
-      initialRoute: FirebaseAuth.instance.currentUser == null ? '/login' : '/home',
+      home: AuthWrapper(),
       routes: {
-        '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
-        '/home': (context) => const HomePage(),
-        '/profile': (context) => const ProfilePage(),
-        '/edit_profile': (context) => const EditProfilePage(),
-        '/sos': (context) => const SOSPage(),
-        '/give_ride': (context) => const GiveRidePage(),
-        '/book_ride': (context) => const BookRidePage(),
-        '/co2_tracker': (context) => const CO2TrackerPage(),
+        '/login': (context) => LoginScreen(),
+        '/register': (context) => RegisterScreen(),
+        '/home': (context) => HomeScreen(),
+        '/book_ride': (context) => BookRideScreen(),
+        '/request_ride': (context) => RequestRideScreen(),
+        '/sos': (context) => SOSScreen(),
+        '/co2_tracker': (context) => CO2TrackerScreen(),
+        '/profile': (context) => ProfileScreen(),
+      },
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        
+        if (snapshot.hasData) {
+          return HomeScreen();
+        }
+        
+        return LoginScreen();
       },
     );
   }

@@ -7,62 +7,58 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
-import 'request_ride.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class BookRidePage extends StatefulWidget {
+class RequestRidePage extends StatefulWidget {
   final Map<String, dynamic> arguments;
 
-  const BookRidePage({Key? key, required this.arguments}) : super(key: key);
+  const RequestRidePage({Key? key, required this.arguments}) : super(key: key);
 
   @override
-  State<BookRidePage> createState() => _BookRidePageState();
+  State<RequestRidePage> createState() => _RequestRidePageState();
 }
 
-class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _RequestRidePageState extends State<RequestRidePage> {
   GoogleMapController? _mapController;
   Position? _currentPosition;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _dropoffController = TextEditingController();
-  bool _isLoading = false;
+  bool _isLoading = true;
   String _selectedVehicleType = 'Car';
-  int _selectedSeats = 1;
+  int _availableSeats = 1;
   DateTime _selectedDateTime = DateTime.now();
   final DateFormat _dateFormat = DateFormat('MMM dd, yyyy HH:mm');
-  double _estimatedFare = 0.0;
-  bool _isFareCalculated = false;
+  double _pricePerSeat = 0.0;
+  bool _isPriceSet = false;
   List<Prediction> _pickupPredictions = [];
   List<Prediction> _dropoffPredictions = [];
-  final _places = GoogleMapsPlaces(apiKey: 'AIzaSyCPmf03XcowTuWeMD7n43LAV7CeJ5cA3bs');
+  final _places = GoogleMapsPlaces(apiKey: 'YOUR_GOOGLE_MAPS_API_KEY');
   BitmapDescriptor? _personMarkerIcon;
   BitmapDescriptor? _bikeMarkerIcon;
   LatLng? _pickupLocation;
   LatLng? _dropoffLocation;
   String? _estimatedTime;
   double? _estimatedDistance;
-  List<Map<String, dynamic>> _availableRides = [];
-  final _searchController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _getCurrentLocation();
     _loadMarkerIcons();
-    _loadAvailableRides();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _mapController?.dispose();
     _pickupController.dispose();
     _dropoffController.dispose();
-    _searchController.dispose();
+    _priceController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -70,7 +66,6 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       if (mounted) {
@@ -81,7 +76,6 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
       return;
     }
 
-    // Check location permission
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -106,7 +100,6 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
       return;
     }
 
-    // Get current position
     try {
       final position = await Geolocator.getCurrentPosition();
       setState(() {
@@ -151,19 +144,6 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
     }
   }
 
-  Future<void> _calculateFare() async {
-    if (_currentPosition == null) return;
-
-    // Simulate fare calculation based on distance
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() {
-        _estimatedFare = 50.0 + (_selectedSeats * 10.0);
-        _isFareCalculated = true;
-      });
-    }
-  }
-
   Future<void> _selectDateAndTime() async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -187,47 +167,6 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
           );
         });
       }
-    }
-  }
-
-  // Method to confirm the ride
-  void _confirmRide() {
-    if (_currentPosition != null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Confirm Ride'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Vehicle Type: $_selectedVehicleType'),
-              Text('Seats: $_selectedSeats'),
-              Text('Date/Time: ${_dateFormat.format(_selectedDateTime)}'),
-              Text('Estimated Fare: \$${_estimatedFare.toStringAsFixed(2)}'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ride confirmed!')),
-                );
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a destination.')),
-      );
     }
   }
 
@@ -265,6 +204,8 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
             ? Location(lat: _currentPosition!.latitude, lng: _currentPosition!.longitude)
             : null,
         radius: 50000,
+        types: ['address', 'establishment', 'geocode', 'point_of_interest'],
+        components: [Component('country', 'in')], // Restrict to India
       );
 
       if (response.isOkay) {
@@ -275,11 +216,23 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
             _dropoffPredictions = response.predictions;
           }
         });
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${response.errorMessage}')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error searching places: $e')),
+          SnackBar(
+            content: Text('Error searching places: $e'),
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () => _searchPlaces(query, isPickup),
+            ),
+          ),
         );
       }
     }
@@ -287,29 +240,70 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
 
   Future<void> _getPlaceDetails(String placeId, bool isPickup) async {
     try {
-      final details = await _places.getDetailsByPlaceId(placeId);
+      final details = await _places.getDetailsByPlaceId(
+        placeId,
+      );
+      
       if (details.isOkay) {
         final location = details.result.geometry!.location;
         final latLng = LatLng(location.lat, location.lng);
         
+        // Extract address components
+        String village = '';
+        String mandal = '';
+        String district = '';
+        String pincode = '';
+        
+        for (var component in details.result.addressComponents) {
+          if (component.types.contains('locality')) {
+            village = component.longName;
+          } else if (component.types.contains('administrative_area_level_2')) {
+            mandal = component.longName;
+          } else if (component.types.contains('administrative_area_level_1')) {
+            district = component.longName;
+          } else if (component.types.contains('postal_code')) {
+            pincode = component.longName;
+          }
+        }
+
+        // Format the address with all components
+        String detailedAddress = [
+          village,
+          mandal,
+          district,
+          pincode,
+        ].where((part) => part.isNotEmpty).join(', ');
+        
         setState(() {
           if (isPickup) {
             _pickupLocation = latLng;
-            _pickupController.text = details.result.name ?? '';
+            _pickupController.text = detailedAddress;
             _pickupPredictions = [];
           } else {
             _dropoffLocation = latLng;
-            _dropoffController.text = details.result.name ?? '';
+            _dropoffController.text = detailedAddress;
             _dropoffPredictions = [];
           }
           _updateMarkers();
           _getRoute();
         });
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${details.errorMessage}')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error getting place details: $e')),
+          SnackBar(
+            content: Text('Error getting place details: $e'),
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () => _getPlaceDetails(placeId, isPickup),
+            ),
+          ),
         );
       }
     }
@@ -394,49 +388,14 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
     }
   }
 
-  Future<void> _loadAvailableRides() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final source = widget.arguments['source'] as LatLng;
-      final destination = widget.arguments['destination'] as LatLng;
-      final dateTime = widget.arguments['dateTime'] as DateTime;
-      final seats = widget.arguments['seats'] as int;
-
-      // Query rides that match the criteria
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('ride_requests')
-          .where('status', isEqualTo: 'pending')
-          .where('seats', isGreaterThanOrEqualTo: seats)
-          .orderBy('dateTime')
-          .get();
-
-      setState(() {
-        _availableRides = querySnapshot.docs
-            .map((doc) => {
-                  'id': doc.id,
-                  ...doc.data(),
-                })
-            .toList();
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading rides: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+  Future<void> _submitRideRequest() async {
+    if (_priceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a price')),
+      );
+      return;
     }
-  }
 
-  Future<void> _bookRide(String rideId) async {
     setState(() {
       _isLoading = true;
     });
@@ -447,27 +406,39 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
         throw Exception('User not logged in');
       }
 
-      // Update ride status and add booking details
-      await FirebaseFirestore.instance.collection('ride_requests').doc(rideId).update({
-        'status': 'booked',
-        'bookedBy': {
-          'userId': user.uid,
-          'userName': user.displayName ?? 'Anonymous',
-          'userEmail': user.email,
+      final rideRequest = {
+        'userId': user.uid,
+        'userName': user.displayName ?? 'Anonymous',
+        'userEmail': user.email,
+        'source': {
+          'latitude': (widget.arguments['source'] as LatLng).latitude,
+          'longitude': (widget.arguments['source'] as LatLng).longitude,
         },
-        'bookedAt': FieldValue.serverTimestamp(),
-      });
+        'destination': {
+          'latitude': (widget.arguments['destination'] as LatLng).latitude,
+          'longitude': (widget.arguments['destination'] as LatLng).longitude,
+        },
+        'seats': widget.arguments['seats'],
+        'vehicleType': widget.arguments['vehicleType'],
+        'dateTime': widget.arguments['dateTime'],
+        'price': double.parse(_priceController.text),
+        'description': _descriptionController.text,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+
+      await FirebaseFirestore.instance.collection('ride_requests').add(rideRequest);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ride booked successfully')),
+          const SnackBar(content: Text('Ride request submitted successfully')),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error booking ride: $e')),
+          SnackBar(content: Text('Error submitting ride request: $e')),
         );
       }
     } finally {
@@ -481,104 +452,105 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
+    final source = widget.arguments['source'] as LatLng;
+    final destination = widget.arguments['destination'] as LatLng;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Available Rides'),
+        title: const Text('Request Ride'),
         backgroundColor: Colors.teal,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _availableRides.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No rides available matching your criteria',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _availableRides.length,
-                  itemBuilder: (context, index) {
-                    final ride = _availableRides[index];
-                    return Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Ride Details Card
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ride Details',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  ride['vehicleType'],
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '₹${ride['price']} per seat',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.teal,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            _buildDetailRow('Available Seats', ride['seats'].toString()),
-                            _buildDetailRow('Date/Time', _dateFormat.format(ride['dateTime'].toDate())),
-                            if (ride['description'] != null && ride['description'].isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  ride['description'],
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Posted by: ${ride['userName']}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => _bookRide(ride['id']),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.teal,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Text('Book Ride'),
-                                ),
-                              ],
-                            ),
-                          ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDetailRow('Vehicle Type', widget.arguments['vehicleType']),
+                    _buildDetailRow('Seats', widget.arguments['seats'].toString()),
+                    _buildDetailRow('Date/Time', dateFormat.format(widget.arguments['dateTime'])),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Price Input
+            TextField(
+              controller: _priceController,
+              decoration: InputDecoration(
+                labelText: 'Price per Seat (₹)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                prefixIcon: const Icon(Icons.currency_rupee),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            // Description Input
+            TextField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Additional Details (Optional)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                prefixIcon: const Icon(Icons.description),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 24),
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submitRideRequest,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Submit Ride Request',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
                         ),
                       ),
-                    );
-                  },
-                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -586,13 +558,13 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
             label,
             style: const TextStyle(
               color: Colors.grey,
-              fontSize: 14,
+              fontSize: 16,
             ),
           ),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -600,4 +572,4 @@ class _BookRidePageState extends State<BookRidePage> with SingleTickerProviderSt
       ),
     );
   }
-}
+} 

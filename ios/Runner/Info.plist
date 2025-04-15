@@ -52,8 +52,10 @@
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>We need your location to provide ride booking and SOS services.</string>
 
-    <!-- Google Maps API Key (Optional for iOS) -->
+    <!-- Google Maps API Key -->
     <key>io.flutter.embedded_views_preview</key>
     <true/>
+    <key>GMSApiKey</key>
+    <string>AIzaSyCPmf03XcowTuWeMD7n43LAV7CeJ5cA3bs</string>
 </dict>
 </plist>

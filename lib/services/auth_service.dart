@@ -35,9 +35,44 @@ class AuthService {
         email: email,
         password: password,
       );
+      // Send email verification
+      await userCredential.user?.sendEmailVerification();
       return userCredential.user;
     } catch (e) {
       throw Exception('Failed to register: $e');
+    }
+  }
+
+  // Send password reset email
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      throw Exception('Failed to send password reset email: $e');
+    }
+  }
+
+  // Check if email is verified
+  bool isEmailVerified() {
+    return _auth.currentUser?.emailVerified ?? false;
+  }
+
+  // Send email verification
+  Future<void> sendEmailVerification() async {
+    try {
+      await _auth.currentUser?.sendEmailVerification();
+    } catch (e) {
+      throw Exception('Failed to send email verification: $e');
+    }
+  }
+
+  // Update user profile
+  Future<void> updateProfile({String? displayName, String? photoURL}) async {
+    try {
+      await _auth.currentUser?.updateDisplayName(displayName);
+      await _auth.currentUser?.updatePhotoURL(photoURL);
+    } catch (e) {
+      throw Exception('Failed to update profile: $e');
     }
   }
 }
