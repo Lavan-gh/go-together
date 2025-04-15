@@ -1,3 +1,5 @@
+// @dart=2.19
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -170,6 +172,7 @@ class _GiveRidePageState extends State<GiveRidePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+<<<<<<< HEAD
         title: const Text('Give a Ride'),
         backgroundColor: Colors.teal,
       ),
@@ -264,6 +267,53 @@ class _GiveRidePageState extends State<GiveRidePage> {
                       ),
                     ],
                   ),
+=======
+        title: const Text('Give a Ride'), // App bar title
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // TextField for Pickup Location
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Pickup Location',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // TextField for Drop-off Location
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Drop-off Location',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // TextField for Number of Seats Available
+            const TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Number of Seats Available',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Button to submit ride details
+            ElevatedButton(
+              onPressed: () {
+                // Show a SnackBar when the button is pressed
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Ride details submitted!')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+>>>>>>> f822eaa09bbf8b284bad692aaf862a2b4735e9c4
                 ),
                 // Bottom Sheet
                 Container(

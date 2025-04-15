@@ -9,14 +9,14 @@ class CustomInput extends StatelessWidget {
   final IconData? prefixIcon;
 
   const CustomInput({
-    Key? key,
+    super.key,
     required this.controller,
     required this.labelText,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.validator,
     this.prefixIcon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

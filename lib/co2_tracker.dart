@@ -1,3 +1,5 @@
+// @dart=2.19
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -72,6 +74,7 @@ class _CO2TrackerPageState extends State<CO2TrackerPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+<<<<<<< HEAD
             // Summary Cards
             Row(
               children: [
@@ -81,6 +84,29 @@ class _CO2TrackerPageState extends State<CO2TrackerPage> {
                     '${_totalSavings.toStringAsFixed(1)} kg',
                     Icons.eco,
                     Colors.green,
+=======
+            // Title text
+            const Text(
+              'Track your CO2 emissions and savings here!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            // Description text
+            const Text(
+              'This feature will allow you to monitor your environmental impact by tracking the CO2 emissions saved through carpooling.',
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 40),
+            // Button to trigger CO2 tracking functionality
+            ElevatedButton(
+              onPressed: () {
+                // Show a SnackBar when the button is pressed
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('CO2 Tracker functionality coming soon!'),
+>>>>>>> f822eaa09bbf8b284bad692aaf862a2b4735e9c4
                   ),
                 ),
                 const SizedBox(width: 16),

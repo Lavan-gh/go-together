@@ -10,7 +10,7 @@ class CustomButton extends StatelessWidget {
   final bool isLoading;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.color = Colors.teal,
@@ -18,7 +18,7 @@ class CustomButton extends StatelessWidget {
     this.height = 50.0,
     this.textStyle = const TextStyle(fontSize: 18, color: Colors.white),
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
