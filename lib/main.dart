@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-<<<<<<< HEAD
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/login_screen.dart';
@@ -15,19 +14,6 @@ import 'screens/profile_screen.dart';
 import 'screens/book_ride_screen.dart';
 import 'screens/request_ride_screen.dart';
 import 'firebase_options.dart';
-=======
-import 'firebase_options.dart'; // Ensure this file is correctly configured
-
-import 'login.dart';
-import 'register.dart';
-import 'home.dart';
-import 'profile.dart';
-import 'edit_profile.dart';
-import 'sos.dart';
-import 'give_ride.dart';
-import 'book_ride.dart';
-import 'co2_tracker.dart';
->>>>>>> f822eaa09bbf8b284bad692aaf862a2b4735e9c4
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
