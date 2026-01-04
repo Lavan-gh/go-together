@@ -48,6 +48,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.clear();
   }
 
+
+  
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
