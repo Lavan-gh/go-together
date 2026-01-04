@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'services/chat_service.dart';
 
+
+
+
 class ChatScreen extends StatefulWidget {
   final String rideId;
   final String otherUserName;
