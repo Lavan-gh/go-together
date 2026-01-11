@@ -1,6 +1,6 @@
 # app_1
 A new Flutter project.
-## Getting Start
+## Getting Started
 This project is a starting point for a Flutter applicatio
 A few resources to get you started if this is your first Flutter project:
 
