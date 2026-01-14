@@ -3,9 +3,6 @@
 # app_1
 A new Flutter project.
 
-
-# checker LAVAN REDDY HEROES NEVER DIE 
-
 ## Getting Started
 This project is a starting point for a Flutter applicatio
 A few resources to get you started if this is your first Flutter project:
